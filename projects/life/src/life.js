@@ -6,6 +6,7 @@
  * Make a 2D array helper function
  */
 function Array2D(width, height) {
+  //NOTE:  Iterate through Array2D row first then column
   let a = new Array(height);
 
   for (let i = 0; i < height; i++) {
@@ -51,8 +52,8 @@ class Life {
    * Clear the life grid
    */
   clear() {
-    for (let y = 0; y < this.height; y++) {
-      this.buffer[this.currentBufferIndex][y].fill(0);
+    for (let row = 0; row < this.height; row++) {
+      this.buffer[this.currentBufferIndex][row].fill(0);
     }
   }
   
@@ -62,9 +63,9 @@ class Life {
   randomize() {
     let buffer = this.buffer[this.currentBufferIndex];
 
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        buffer[y][x] = (Math.random()*2)|0; // Random 0 or 1
+    for (let row = 0; row < this.height; row++) {
+      for (let col = 0; col < this.width; col++) {
+        buffer[row][col] = (Math.random()*2)|0; // Random 0 or 1
       }
     }
   }
@@ -83,14 +84,14 @@ class Life {
     /**
      * Count the neighbors of a cell
      */
-    function countNeighbors(x, y, options={border:'zero'}) {
+    function countNeighbors(col, row, options={border:'zero'}) {
       let neighborCount = 0;
 
       if (options.border === 'wrap') {
-        let north = y - 1;
-        let south = y + 1;
-        let west = x - 1;
-        let east = x + 1;
+        let north = row - 1;
+        let south = row + 1;
+        let west = col - 1;
+        let east = col + 1;
 
         // Wrap around the edges
 
@@ -112,39 +113,39 @@ class Life {
 
         neighborCount =
           currentBuffer[north][west] +
-          currentBuffer[north][x] +
+          currentBuffer[north][col] +
           currentBuffer[north][east] +
-          currentBuffer[y][west] +
-          currentBuffer[y][east] +
+          currentBuffer[row][west] +
+          currentBuffer[row][east] +
           currentBuffer[south][west] +
-          currentBuffer[south][x] +
+          currentBuffer[south][col] +
           currentBuffer[south][east];
 
       } else if (options.border === 'zero') {
 
         // Treat out of bounds as zero
-        for (let yOffset = -1; yOffset <= 1; yOffset++) {
-          let yPos = y + yOffset;
+        for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+          let rowPos = row + rowOffset;
 
-          if (yPos < 0 || yPos === this.height) {
+          if (rowPos < 0 || rowPos === this.height) {
             // Out of bounds
             continue;
           }
 
-          for (let xOffset = -1; xOffset <= 1; xOffset++) {
-            let xPos = x + xOffset;
+          for (let colOffset = -1; colOffset <= 1; colOffset++) {
+            let colPos = col + colOffset;
 
-            if (xPos < 0 || xPos === this.width) {
+            if (colPos < 0 || colPos === this.width) {
               // Out of bounds
               continue;
             }
 
             // Don't count center element
-            if (xOffset === 0 && yOffset === 0) {
+            if (colOffset === 0 && rowOffset === 0) {
               continue;
             }
 
-            neighborCount += currentBuffer[yPos][xPos];
+            neighborCount += currentBuffer[rowPos][colPos];
           }
         }
 
@@ -159,30 +160,30 @@ class Life {
     // Loop through and decide if the next generation is alive or dead
     // for each cell processed.
 
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
+    for (let row = 0; row < this.height; row++) {
+      for (let col = 0; col < this.width; col++) {
 
-        let neighborCount = (countNeighbors.bind(this))(x, y);
+        let neighborCount = (countNeighbors.bind(this))(col, row);
 
-        let thisCell = currentBuffer[y][x];
+        let thisCell = currentBuffer[row][col];
 
         if (thisCell === 1) {
           // We're alive. Let's check if we're dying.
           if (neighborCount < 2 || neighborCount > 3) {
             // Wake up. Time to die.
-            backBuffer[y][x] = 0;
+            backBuffer[row][col] = 0;
           } else {
             // We're still alive!
-            backBuffer[y][x] = 1;
+            backBuffer[row][col] = 1;
           }
         } else {
           // We're dead. Let's see if we come to life.
           if (neighborCount === 3) {
             // A rebirth!
-            backBuffer[y][x] = 1;
+            backBuffer[row][col] = 1;
           } else {
             // We're still dead
-            backBuffer[y][x] = 0;
+            backBuffer[row][col] = 0;
           }
         }
       }
